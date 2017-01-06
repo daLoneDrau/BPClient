@@ -1,0 +1,126 @@
+<!doctype html>
+
+
+<html ng-app="restApp" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angular Rest</title>
+    <!-- load libraries -->
+    <script type="text/javascript" src="scripts/lib/constants/EquipmentElement.js"></script>
+    <script type="text/javascript" src="scripts/lib/flyweights/Attribute.js"></script>
+    <script type="text/javascript" src="scripts/lib/flyweights/EquipmentItemModifier.js"></script>
+    <script type="text/javascript" src="scripts/lib/flyweights/IOEquipItem.js"></script>
+    <!-- load angular -->
+    <script type="text/javascript" src="./scripts/lib/angular.min.js"></script>
+    <script type="text/javascript" src="./scripts/lib/angular-route.min.js"></script>
+    <!-- load application -->
+    <script type="text/javascript" src="./scripts/lib/app.js"></script>
+    <!-- load templates -->
+    <script type="text/javascript" src="./templates/Basic/basic_main.template.js"></script>
+    <script type="text/javascript" src="./templates/Basic/attribute.template.js"></script>
+    <script type="text/javascript" src="./templates/Basic/element.template.js"></script>
+    <script type="text/javascript" src="./templates/Basic/group.template.js"></script>
+    <script type="text/javascript" src="./templates/Basic/object_type.template.js"></script>
+    <script type="text/javascript" src="./templates/Basic/die.template.js"></script>
+    <script type="text/javascript" src="./templates/Basic/dice.template.js"></script>
+    <script type="text/javascript" src="./templates/Basic/gender.template.js"></script>
+    <script type="text/javascript" src="./templates/Basic/nav.template.js"></script>
+    <script type="text/javascript" src="./templates/Basic/weapon.template.js"></script>
+    <script type="text/javascript" src="./templates/Basic/modifier.template.js"></script>
+    <script type="text/javascript" src="./templates/main.template.js"></script>
+    <!-- load controllers -->
+    <script type="text/javascript" src="./scripts/controllers/attribute.controller.js"></script>
+    <script type="text/javascript" src="./scripts/controllers/element.controller.js"></script>
+    <script type="text/javascript" src="./scripts/controllers/group.controller.js"></script>
+    <script type="text/javascript" src="./scripts/controllers/object_type.controller.js"></script>
+    <script type="text/javascript" src="./scripts/controllers/die.controller.js"></script>
+    <script type="text/javascript" src="./scripts/controllers/dice.controller.js"></script>
+    <script type="text/javascript" src="./scripts/controllers/gender.controller.js"></script>
+    <script type="text/javascript" src="./scripts/controllers/weapon.controller.js"></script>
+    <script type="text/javascript" src="./scripts/controllers/modifier.controller.js"></script>
+    <!-- load services -->
+    <script type="text/javascript" src="./scripts/lib/services.js"></script>
+    <!-- link to bootstrap 1st.  minified is for production -->
+    <link href="./Content/bootstrap.css" rel="stylesheet">
+    <!-- links to custom styles go here -->
+    <style>
+	    body {
+		    color: #cfd2da;
+		    background-color: #252830;
+		}
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">Brand</a>
+            </div>
+            
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li class="active" id="basic_nav_item">
+                        <a href="#basic" onclick="angular.element(document.querySelector('#basic_nav_item')).addClass('active');angular.element(document.querySelector('#crypt_nav_item')).removeClass('active');">Basic <span class="sr-only">(current)</span></a></li>
+                    <li id="crypt_nav_item">
+                        <a href="#crypt" onclick="angular.element(document.querySelector('#crypt_nav_item')).addClass('active');angular.element(document.querySelector('#basic_nav_item')).removeClass('active');">Crypt</a>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">Action</a></li>
+                            <li><a href="#">Another action</a></li>
+                            <li><a href="#">Something else here</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="#">Separated link</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="#">One more separated link</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <form class="navbar-form navbar-left">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search">
+                    </div>
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </form>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="#">Link</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">Action</a></li>
+                            <li><a href="#">Another action</a></li>
+                            <li><a href="#">Something else here</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="#">Separated link</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+
+    <div class="container">
+        <div class="starter-template">
+            <h1>Intro</h1>
+            <p class="lead">blah blah intro blah</p> <!-- lead class will make fonts bigger and centered-->
+        </div>
+        <div class="row visible-lg visible-md"> <!-- row will only visible when screen is large or medium -->
+            IMAGE ROW
+        </div>
+        <section class="row">
+            <div ng-view></div>
+        </section>
+    </div>
+</body>
+</html>
