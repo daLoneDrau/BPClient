@@ -1,27 +1,6 @@
 function Interactive() {
 	this.FAST_RELEASE = true;
 }
-Interactive.instance = new Interactive();
-
-/**
- * Adds an animation to an IO.
- * @param id
- * @param animId
- * @throws Error
- */
-Interactive.prototype.addAnimation = function(id, animId) {
-	
-}
-/**
- * Adds an interactive object to the scene.
- * @param item
- * @param flags
- * @return
- * @throws Error
- */
-Interactive.prototype.addItem = function(item, flags) {
-	
-}
 /**
  * Destroys dynamic info for an interactive object.
  * @param io the IO

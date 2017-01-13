@@ -1,155 +1,110 @@
-function BPItem() {
-	if (arguments.length === 1) {
-		console.log("1 arg");
-		console.log(arguments[0]);
-		this.abbreviation = arguments[0].code;
-		this.displayName = arguments[0].name;
-		this.description = arguments[0].description;
-	} else if (arguments.length === 2) {
-		this.abbreviation = arguments[0];
-		this.displayName = arguments[1];
-		this.description = "";
-	} else if (arguments.length === 3) {
-		this.abbreviation = arguments[0];
-		this.displayName = arguments[1];
-		this.description = arguments[2];
-	} else {
-		throw new Error("Invalid number of arguments, must be 2 or 3");
-	}
-	if (this.abbreviation === null) {
-		throw new Error("abbreviation cannot be null");
-	}
-	if (this.displayName === null) {
-		throw new Error("name cannot be null");
-	}
-    this.base = 0;
-    this.modifier = 0;
+/**
+ * Creates a new instance of {@link IOItemData}.
+ * @throws Error 
+ */
+function IOItemData() {
+    this.count = 0;
+    this.description = "";
+    this.equipitem = new IOEquipItem();
+    this.foodValue = 0;
+    this.io = null;
+    this.itemName = "";
+    this.lightValue = 0;
+    this.maxOwned = 0;
+    this.price = 0;
+    this.ringType = 0;
+    this.stackSize = 0;
+    this.stealvalue = 0;
+    this.weight = 0;
 }
-	/** the current number in an inventory slot. */
-	private int count;
-	/** the item's description. */
-	private char[] description;
-	/** modifier data for the item. */
-	private IOEquipItem equipitem;
-	/** dunno? */
-	private char foodValue;
-	/** the IO associated with this data. */
-	private IO io;
-	/** the item's name. */
-	private char[] itemName;
-	/** the item's light value. */
-	private int lightValue;
-	/** the maximum number of the item the player can own. */
-	private int maxOwned;
-	/** the item's price. */
-	private float price;
-	/** the type of ring the item is. */
-	private int ringType;
-	/** the amount of the item that can be stacked in one inventory slot. */
-	private int stackSize;
-	/** dunno? */
-	private char stealvalue;
-	/**
-	 * Creates a new instance of {@link IOItemData}.
-	 * @throws RPGException 
-	 */
-	public IOItemData() throws RPGException {
-		equipitem = new IOEquipItem();
+/**
+ * Adjusts the {@link IOItemData}'s count.
+ * @param val the amount adjusted by
+ */
+IOItemData.prototype.adjustCount = function(val) {
+	if (this.count + val < 0) {
+		throw new Error("Cannot remove that many items");
 	}
-	/** the item's weight. */
-	private float weight;
-	/**
-	 * Adjusts the {@link IOItemData}'s count.
-	 * @param val the amount adjusted by
-	 */
-	public final void adjustCount(final int val) throws RPGException {
-		if (count + val < 0) {
-			throw new RPGException(ErrorMessage.INVALID_PARAM,
-			        "Cannot remove that many items");
-		}
-		if (count + val > maxOwned) {
-			throw new RPGException(ErrorMessage.INVALID_PARAM,
-			        "Cannot add that many items");
-		}
-		count += val;
+	if (this.count + val > this.maxOwned) {
+		throw new Error("Cannot add that many items");
 	}
-	/**
-	 * Equips the item on a target IO.
-	 * @param target the target IO
-	 * @throws PooledException if an error occurs
-	 * @throws RPGException if an error occurs
-	 */
-	public final void ARX_EQUIPMENT_Equip(final IO target)
-	        throws RPGException {
-		if (io == null) {
-			throw new RPGException(ErrorMessage.INTERNAL_ERROR,
-			        "Cannot equip item with no IO data");
-		}
-		if (target != null) {
-			if (target.hasIOFlag(IoGlobals.IO_01_PC)) {
-				IoPcData player = target.getPCData();
-				int validid = -1;
-				int i = Interactive.getInstance().getMaxIORefId();
-				for (; i >= 0; i--) {
-					if (Interactive.getInstance().hasIO(i)
-					        && Interactive.getInstance().getIO(i) != null
-					        && io.equals(Interactive.getInstance().getIO(i))) {
-						validid = i;
-						break;
-					}
+	this.count += val;
+}
+/**
+ * Equips the item on a target IO.
+ * @param target the target IO
+ * @throws PooledException if an error occurs
+ * @throws Error if an error occurs
+ */
+IOItemData.prototype.ARX_EQUIPMENT_Equip = function(target) {
+	if (this.io === null) {
+		throw new Error("Cannot equip item with no IO data");
+	}
+	if (target != null) {
+		if (target.hasIOFlag(IO_01_PC)) {
+			var player = target.getPCData();
+			var validid = -1;
+			var i = Interactive.getInstance().getMaxIORefId();
+			for (; i >= 0; i--) {
+				if (Interactive.getInstance().hasIO(i)
+				        && Interactive.getInstance().getIO(i) != null
+				        && io.equals(Interactive.getInstance().getIO(i))) {
+					validid = i;
+					break;
 				}
-				if (validid >= 0) {
-					Interactive.getInstance().RemoveFromAllInventories(io);
-					io.setShow(IoGlobals.SHOW_FLAG_ON_PLAYER); // on player
-					// handle drag
-					// if (toequip == DRAGINTER)
-					// Set_DragInter(NULL);
-					if (io.hasTypeFlag(EquipmentGlobals.OBJECT_TYPE_WEAPON)) {
-						equipWeapon(player);
-					} else if (io
-					        .hasTypeFlag(EquipmentGlobals.OBJECT_TYPE_SHIELD)) {
-						equipShield(player);
-					} else if (io
-					        .hasTypeFlag(EquipmentGlobals.OBJECT_TYPE_RING)) {
-						equipRing(player);
-					} else if (io
-					        .hasTypeFlag(EquipmentGlobals.OBJECT_TYPE_ARMOR)) {
-						// unequip old armor
-						unequipItemInSlot(
-						        player, EquipmentGlobals.EQUIP_SLOT_TORSO);
-						// equip new armor
-						player.setEquippedItem(
-						        EquipmentGlobals.EQUIP_SLOT_TORSO, validid);
-					} else if (io
-					        .hasTypeFlag(
-					                EquipmentGlobals.OBJECT_TYPE_LEGGINGS)) {
-						// unequip old leggings
-						unequipItemInSlot(
-						        player, EquipmentGlobals.EQUIP_SLOT_LEGGINGS);
-						// equip new leggings
-						player.setEquippedItem(
-						        EquipmentGlobals.EQUIP_SLOT_LEGGINGS, validid);
-					} else if (io
-					        .hasTypeFlag(EquipmentGlobals.OBJECT_TYPE_HELMET)) {
-						// unequip old helmet
-						unequipItemInSlot(
-						        player, EquipmentGlobals.EQUIP_SLOT_HELMET);
-						// equip new helmet
-						player.setEquippedItem(
-						        EquipmentGlobals.EQUIP_SLOT_HELMET, validid);
-					}
-					if (io.hasTypeFlag(EquipmentGlobals.OBJECT_TYPE_HELMET)
-					        || io.hasTypeFlag(
-					                EquipmentGlobals.OBJECT_TYPE_ARMOR)
-					        || io.hasTypeFlag(
-					                EquipmentGlobals.OBJECT_TYPE_LEGGINGS)) {
-						target.getPCData().ARX_EQUIPMENT_RecreatePlayerMesh();
-					}
-					target.getPCData().computeFullStats();
+			}
+			if (validid >= 0) {
+				Interactive.getInstance().RemoveFromAllInventories(io);
+				io.setShow(IoGlobals.SHOW_FLAG_ON_PLAYER); // on player
+				// handle drag
+				// if (toequip == DRAGINTER)
+				// Set_DragInter(NULL);
+				if (io.hasTypeFlag(EquipmentGlobals.OBJECT_TYPE_WEAPON)) {
+					equipWeapon(player);
+				} else if (io
+				        .hasTypeFlag(EquipmentGlobals.OBJECT_TYPE_SHIELD)) {
+					equipShield(player);
+				} else if (io
+				        .hasTypeFlag(EquipmentGlobals.OBJECT_TYPE_RING)) {
+					equipRing(player);
+				} else if (io
+				        .hasTypeFlag(EquipmentGlobals.OBJECT_TYPE_ARMOR)) {
+					// unequip old armor
+					unequipItemInSlot(
+					        player, EquipmentGlobals.EQUIP_SLOT_TORSO);
+					// equip new armor
+					player.setEquippedItem(
+					        EquipmentGlobals.EQUIP_SLOT_TORSO, validid);
+				} else if (io
+				        .hasTypeFlag(
+				                EquipmentGlobals.OBJECT_TYPE_LEGGINGS)) {
+					// unequip old leggings
+					unequipItemInSlot(
+					        player, EquipmentGlobals.EQUIP_SLOT_LEGGINGS);
+					// equip new leggings
+					player.setEquippedItem(
+					        EquipmentGlobals.EQUIP_SLOT_LEGGINGS, validid);
+				} else if (io
+				        .hasTypeFlag(EquipmentGlobals.OBJECT_TYPE_HELMET)) {
+					// unequip old helmet
+					unequipItemInSlot(
+					        player, EquipmentGlobals.EQUIP_SLOT_HELMET);
+					// equip new helmet
+					player.setEquippedItem(
+					        EquipmentGlobals.EQUIP_SLOT_HELMET, validid);
 				}
+				if (io.hasTypeFlag(EquipmentGlobals.OBJECT_TYPE_HELMET)
+				        || io.hasTypeFlag(
+				                EquipmentGlobals.OBJECT_TYPE_ARMOR)
+				        || io.hasTypeFlag(
+				                EquipmentGlobals.OBJECT_TYPE_LEGGINGS)) {
+					target.getPCData().ARX_EQUIPMENT_RecreatePlayerMesh();
+				}
+				target.getPCData().computeFullStats();
 			}
 		}
 	}
+}
 	public final void ARX_EQUIPMENT_ReleaseAll() {
 		ARX_EQUIPMENT_ReleaseEquipItem();
 	}
@@ -163,10 +118,10 @@ function BPItem() {
 	 * Sets the item's object type.
 	 * @param flag the type flag
 	 * @param added if <tt>true</tt>, the type is set; otherwise it is removed
-	 * @throws RPGException if an error occurs
+	 * @throws Error if an error occurs
 	 */
 	public final void ARX_EQUIPMENT_SetObjectType(final int flag,
-	        final boolean added) throws RPGException {
+	        final boolean added) throws Error {
 		if (added) {
 			io.addTypeFlag(flag);
 		} else {
@@ -178,10 +133,10 @@ function BPItem() {
 	 * @param target the targeted IO
 	 * @param isDestroyed if<tt>true</tt> the item is destroyed afterwards
 	 * @throws PooledException if an error occurs
-	 * @throws RPGException if an error occurs
+	 * @throws Error if an error occurs
 	 */
 	public void ARX_EQUIPMENT_UnEquip(final IO target,
-	        final boolean isDestroyed) throws RPGException {
+	        final boolean isDestroyed) throws Error {
 		if (target != null) {
 			if (target.hasIOFlag(IoGlobals.IO_01_PC)) {
 				int i = ProjectConstants.getInstance().getMaxEquipped() - 1;
@@ -231,9 +186,9 @@ function BPItem() {
 	/**
 	 * Equips a ring on a player.
 	 * @param player the player data
-	 * @throws RPGException if an error occurs
+	 * @throws Error if an error occurs
 	 */
-	private void equipRing(final IoPcData player) throws RPGException {
+	private void equipRing(final IoPcData player) throws Error {
 		// check left and right finger
 		// to see if it can be equipped
 		boolean canEquip = true;
@@ -307,9 +262,9 @@ function BPItem() {
 	/**
 	 * Equips a shield on a player.
 	 * @param player the player data
-	 * @throws RPGException if an error occurs
+	 * @throws Error if an error occurs
 	 */
-	private void equipShield(final IoPcData player) throws RPGException {
+	private void equipShield(final IoPcData player) throws Error {
 		// unequip old shield
 		unequipItemInSlot(player, EquipmentGlobals.EQUIP_SLOT_SHIELD);
 		// equip new shield
@@ -334,9 +289,9 @@ function BPItem() {
 	/**
 	 * Equips a weapon for a player.
 	 * @param player the player data
-	 * @throws RPGException if an error occurs
+	 * @throws Error if an error occurs
 	 */
-	private void equipWeapon(final IoPcData player) throws RPGException {
+	private void equipWeapon(final IoPcData player) throws Error {
 		// unequip old weapon
 		unequipItemInSlot(player, EquipmentGlobals.EQUIP_SLOT_WEAPON);
 		// equip new weapon
@@ -477,11 +432,11 @@ function BPItem() {
 	/**
 	 * Sets the {@link IOItemData}'s description.
 	 * @param val the name to set
-	 * @throws RPGException if the parameter is null
+	 * @throws Error if the parameter is null
 	 */
-	public final void setDescription(final char[] val) throws RPGException {
+	public final void setDescription(final char[] val) throws Error {
 		if (val == null) {
-			throw new RPGException(ErrorMessage.BAD_PARAMETERS,
+			throw new Error(ErrorMessage.BAD_PARAMETERS,
 			        "Description cannot be null");
 		}
 		description = val;
@@ -489,11 +444,11 @@ function BPItem() {
 	/**
 	 * Sets the {@link IOItemData}'s description.
 	 * @param val the name to set
-	 * @throws RPGException if the parameter is null
+	 * @throws Error if the parameter is null
 	 */
-	public final void setDescription(final String val) throws RPGException {
+	public final void setDescription(final String val) throws Error {
 		if (val == null) {
-			throw new RPGException(ErrorMessage.BAD_PARAMETERS,
+			throw new Error(ErrorMessage.BAD_PARAMETERS,
 			        "Description cannot be null");
 		}
 		description = val.toCharArray();
@@ -526,11 +481,11 @@ function BPItem() {
 	/**
 	 * Sets the item's name.
 	 * @param val the name to set
-	 * @throws RPGException if the parameter is null
+	 * @throws Error if the parameter is null
 	 */
-	public final void setItemName(final char[] val) throws RPGException {
+	public final void setItemName(final char[] val) throws Error {
 		if (val == null) {
-			throw new RPGException(ErrorMessage.BAD_PARAMETERS,
+			throw new Error(ErrorMessage.BAD_PARAMETERS,
 			        "Item name cannot be null");
 		}
 		this.itemName = val;
@@ -538,11 +493,11 @@ function BPItem() {
 	/**
 	 * Sets the item's name.
 	 * @param val the name to set
-	 * @throws RPGException if the parameter is null
+	 * @throws Error if the parameter is null
 	 */
-	public final void setItemName(final String val) throws RPGException {
+	public final void setItemName(final String val) throws Error {
 		if (val == null) {
-			throw new RPGException(ErrorMessage.BAD_PARAMETERS,
+			throw new Error(ErrorMessage.BAD_PARAMETERS,
 			        "Item name cannot be null");
 		}
 		this.itemName = val.toCharArray();
@@ -575,29 +530,30 @@ function BPItem() {
 	public void setRingType(final int val) {
 		this.ringType = val;
 	}
-	/**
-	 * Sets the amount of the item that can be stacked in one inventory slot.
-	 * @param val the value to set
-	 */
-	public void setStackSize(final int val) {
-		this.stackSize = val;
-	}
-	/**
-	 * Sets the value of the stealvalue.
-	 * @param stealvalue the new value to set
-	 */
-	public void setStealvalue(final char stealvalue) {
-		this.stealvalue = stealvalue;
-	}
-	/**
-	 * Sets the item's weight.
-	 * @param f the weight to set
-	 */
-	public final void setWeight(final float f) {
-		weight = f;
-	}
+/**
+ * Sets the amount of the item that can be stacked in one inventory slot.
+ * @param val the value to set
+ */
+IOItemData.prototype.setStackSize = function(val) {
+	this.stackSize = val;
+}
+/**
+ * Sets the value of the stealvalue.
+ * @param stealvalue the new value to set
+ */
+IOItemData.prototype.setWeight = function(val) {
+	this.stealvalue = val;
+}
+/**
+ * Sets the item's weight.
+ * @param val the weight to set
+ */
+IOItemData.prototype.setWeight = function(val) {
+	this.weight = val;
+}
+	IOEquipItem.prototype.getElement = function(element) {
 	private void unequipItemInSlot(final IoPcData player, final int slot)
-	        throws RPGException {
+	        throws Error {
 		if (player.getEquippedItem(slot) >= 0) {
 			int slotioid = player.getEquippedItem(slot);
 			if (Interactive.getInstance().hasIO(slotioid)) {
@@ -611,4 +567,3 @@ function BPItem() {
 			}
 		}
 	}
-}
